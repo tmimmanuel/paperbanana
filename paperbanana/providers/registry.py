@@ -33,6 +33,13 @@ _API_KEY_HINTS = {
         "  2. Set the environment variable:\n\n"
         "  export OPENAI_API_KEY=your-key-here"
     ),
+    "ANTHROPIC_API_KEY": (
+        "ANTHROPIC_API_KEY not found.\n\n"
+        "To fix this:\n"
+        "  1. Get an API key at: https://console.anthropic.com/settings/keys\n"
+        "  2. Set the environment variable:\n\n"
+        "  export ANTHROPIC_API_KEY=your-key-here"
+    ),
     "AWS_CREDENTIALS": (
         "AWS credentials not found for Bedrock.\n\n"
         "To fix this, configure one of:\n"
@@ -111,9 +118,18 @@ class ProviderRegistry:
                 region=settings.aws_region,
                 profile=settings.aws_profile,
             )
+        elif provider == "anthropic":
+            _validate_api_key(settings.anthropic_api_key, "ANTHROPIC_API_KEY")
+            from paperbanana.providers.vlm.anthropic import AnthropicVLM
+
+            return AnthropicVLM(
+                api_key=settings.anthropic_api_key,
+                model=settings.vlm_model,
+            )
         else:
             raise ValueError(
-                f"Unknown VLM provider: {provider}. Available: gemini, openrouter, openai, bedrock"
+                "Unknown VLM provider: "
+                f"{provider}. Available: gemini, openrouter, openai, bedrock, anthropic"
             )
 
     @staticmethod

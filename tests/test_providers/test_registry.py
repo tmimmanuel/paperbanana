@@ -51,6 +51,16 @@ def test_missing_openrouter_api_key_raises_helpful_error():
     assert "export OPENROUTER_API_KEY" in error_msg
 
 
+def test_missing_anthropic_api_key_raises_helpful_error():
+    """Test that missing ANTHROPIC_API_KEY raises a helpful error with setup instructions."""
+    settings = Settings(vlm_provider="anthropic", anthropic_api_key=None)
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY not found") as exc_info:
+        ProviderRegistry.create_vlm(settings)
+    error_msg = str(exc_info.value)
+    assert "console.anthropic.com" in error_msg
+    assert "export ANTHROPIC_API_KEY" in error_msg
+
+
 def test_missing_google_api_key_for_image_gen_raises_helpful_error():
     """Test that missing GOOGLE_API_KEY for image gen raises a helpful error."""
     settings = Settings(image_provider="google_imagen", google_api_key=None)
