@@ -556,11 +556,13 @@ def batch(
         settings = Settings.from_yaml(config, **overrides)
     else:
         from dotenv import load_dotenv
+
         load_dotenv()
         settings = Settings(**overrides)
 
     if auto_download_data:
         from paperbanana.data.manager import DatasetManager
+
         dm = DatasetManager(cache_dir=settings.cache_dir)
         if not dm.is_downloaded():
             console.print("  [dim]Downloading expanded reference set...[/dim]")
@@ -590,14 +592,16 @@ def batch(
         input_path = Path(item["input"])
         if not input_path.exists():
             console.print(f"[red]Skipping item '{item_id}': input not found: {input_path}[/red]")
-            report["items"].append({
-                "id": item_id,
-                "input": item["input"],
-                "caption": item["caption"],
-                "run_id": None,
-                "output_path": None,
-                "error": "input file not found",
-            })
+            report["items"].append(
+                {
+                    "id": item_id,
+                    "input": item["input"],
+                    "caption": item["caption"],
+                    "run_id": None,
+                    "output_path": None,
+                    "error": "input file not found",
+                }
+            )
             continue
         source_context = input_path.read_text(encoding="utf-8")
         gen_input = GenerationInput(
@@ -609,25 +613,29 @@ def batch(
         pipeline = PaperBananaPipeline(settings=settings)
         try:
             result = asyncio.run(pipeline.generate(gen_input))
-            report["items"].append({
-                "id": item_id,
-                "input": item["input"],
-                "caption": item["caption"],
-                "run_id": result.metadata.get("run_id"),
-                "output_path": result.image_path,
-                "iterations": len(result.iterations),
-            })
+            report["items"].append(
+                {
+                    "id": item_id,
+                    "input": item["input"],
+                    "caption": item["caption"],
+                    "run_id": result.metadata.get("run_id"),
+                    "output_path": result.image_path,
+                    "iterations": len(result.iterations),
+                }
+            )
             console.print(f"  [green]✓[/green] [dim]{result.image_path}[/dim]\n")
         except Exception as e:
             console.print(f"  [red]✗[/red] {e}\n")
-            report["items"].append({
-                "id": item_id,
-                "input": item["input"],
-                "caption": item["caption"],
-                "run_id": None,
-                "output_path": None,
-                "error": str(e),
-            })
+            report["items"].append(
+                {
+                    "id": item_id,
+                    "input": item["input"],
+                    "caption": item["caption"],
+                    "run_id": None,
+                    "output_path": None,
+                    "error": str(e),
+                }
+            )
 
     total_elapsed = time.perf_counter() - total_start
     report["total_seconds"] = round(total_elapsed, 1)

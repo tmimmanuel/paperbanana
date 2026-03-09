@@ -38,6 +38,7 @@ def load_batch_manifest(manifest_path: Path) -> list[dict[str, Any]]:
     if suffix in (".yaml", ".yml"):
         try:
             import yaml
+
             data = yaml.safe_load(raw)
         except ImportError:
             raise RuntimeError(
@@ -45,6 +46,7 @@ def load_batch_manifest(manifest_path: Path) -> list[dict[str, Any]]:
             )
     elif suffix == ".json":
         import json
+
         data = json.loads(raw)
     else:
         raise ValueError(f"Manifest must be .yaml, .yml, or .json. Got: {manifest_path.suffix}")
@@ -69,9 +71,11 @@ def load_batch_manifest(manifest_path: Path) -> list[dict[str, Any]]:
         input_path = Path(inp)
         if not input_path.is_absolute():
             input_path = (parent / input_path).resolve()
-        result.append({
-            "input": str(input_path),
-            "caption": str(caption),
-            "id": entry.get("id", f"item_{i + 1}"),
-        })
+        result.append(
+            {
+                "input": str(input_path),
+                "caption": str(caption),
+                "id": entry.get("id", f"item_{i + 1}"),
+            }
+        )
     return result
