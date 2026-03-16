@@ -284,10 +284,16 @@ def generate(
             if event.stage == PipelineProgressStage.VISUALIZER_START:
                 extra = event.extra or {}
                 total = extra.get("total_iterations", 0)
-                label = f"{event.iteration}/{total}" if event.iteration and total else str(event.iteration or "")
+                if event.iteration and total:
+                    label = f"{event.iteration}/{total}"
+                else:
+                    label = str(event.iteration or "")
                 if settings.auto_refine:
                     label += " (auto)"
-                console.print(f"  [dim]●[/dim] Generating image (iter {event.iteration})...", end="")
+                console.print(
+                    f"  [dim]●[/dim] Generating image (iter {event.iteration})...",
+                    end="",
+                )
             elif event.stage == PipelineProgressStage.VISUALIZER_END:
                 console.print(
                     f" [green]✓[/green] [dim]{event.seconds:.1f}s[/dim]"
@@ -305,7 +311,8 @@ def generate(
                 extra = event.extra or {}
                 if extra.get("needs_revision"):
                     console.print(
-                        f"    [yellow]↻[/yellow] Revision needed: [dim]{extra.get('summary', '')}[/dim]"
+                        "    [yellow]↻[/yellow] Revision needed: "
+                        f"[dim]{extra.get('summary', '')}[/dim]"
                     )
                 else:
                     console.print("    [green]✓[/green] [bold green]Critic satisfied[/bold green]")
@@ -447,7 +454,10 @@ def generate(
                     console.print("[bold]Phase 2[/bold] — Iterative Refinement")
                 extra = event.extra or {}
                 total = extra.get("total_iterations", 0)
-                label = f"{event.iteration}/{total}" if event.iteration and total else str(event.iteration or "")
+                if event.iteration and total:
+                    label = f"{event.iteration}/{total}"
+                else:
+                    label = str(event.iteration or "")
                 if settings.auto_refine:
                     label += " (auto)"
                 console.print(f"  [dim]●[/dim] Generating image [{label}]...", end="")

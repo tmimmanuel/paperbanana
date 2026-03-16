@@ -112,7 +112,8 @@ async def test_progress_callback_with_optimize_receives_optimizer_events(tmp_pat
         save_iterations=False,
         optimize_inputs=True,
     )
-    # Optimizer runs 2 parallel calls (context enricher + caption sharpener), then planner, stylist, critic
+    # Optimizer runs 2 parallel calls (context enricher + caption sharpener),
+    # then planner, stylist, critic
     vlm = _MockVLM(
         responses=[
             "Enriched context",
