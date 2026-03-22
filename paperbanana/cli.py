@@ -163,6 +163,11 @@ def generate(
         "--seed",
         help="Random seed for reproducible image generation",
     ),
+    venue: Optional[str] = typer.Option(
+        None,
+        "--venue",
+        help="Target venue style (neurips, icml, acl, ieee, custom)",
+    ),
     verbose: bool = typer.Option(
         False, "--verbose", "-v", help="Show detailed agent progress and timing"
     ),
@@ -178,6 +183,11 @@ def generate(
     if exemplar_mode and exemplar_mode not in ("external_then_rerank", "external_only"):
         console.print(
             "[red]Error: --exemplar-mode must be external_then_rerank or external_only[/red]"
+        )
+        raise typer.Exit(1)
+    if venue and venue.lower() not in ("neurips", "icml", "acl", "ieee", "custom"):
+        console.print(
+            f"[red]Error: --venue must be neurips, icml, acl, ieee, or custom. Got: {venue}[/red]"
         )
         raise typer.Exit(1)
 
@@ -220,6 +230,8 @@ def generate(
         overrides["exemplar_retrieval_max_retries"] = exemplar_retries
     if seed is not None:
         overrides["seed"] = seed
+    if venue:
+        overrides["venue"] = venue
 
     if config:
         settings = Settings.from_yaml(config, **overrides)
@@ -531,6 +543,11 @@ def batch(
     save_prompts: Optional[bool] = typer.Option(
         None, "--save-prompts/--no-save-prompts", help="Save prompts per run"
     ),
+    venue: Optional[str] = typer.Option(
+        None,
+        "--venue",
+        help="Target venue style (neurips, icml, acl, ieee, custom)",
+    ),
     auto_download_data: bool = typer.Option(
         False, "--auto-download-data", help="Auto-download reference set if needed"
     ),
@@ -539,6 +556,11 @@ def batch(
     """Generate multiple methodology diagrams from a manifest file (YAML or JSON)."""
     if format not in ("png", "jpeg", "webp"):
         console.print(f"[red]Error: Format must be png, jpeg, or webp. Got: {format}[/red]")
+        raise typer.Exit(1)
+    if venue and venue.lower() not in ("neurips", "icml", "acl", "ieee", "custom"):
+        console.print(
+            f"[red]Error: --venue must be neurips, icml, acl, ieee, or custom. Got: {venue}[/red]"
+        )
         raise typer.Exit(1)
 
     configure_logging(verbose=verbose)
@@ -579,6 +601,8 @@ def batch(
         overrides["optimize_inputs"] = True
     if save_prompts is not None:
         overrides["save_prompts"] = save_prompts
+    if venue:
+        overrides["venue"] = venue
 
     if config:
         settings = Settings.from_yaml(config, **overrides)
@@ -773,10 +797,20 @@ def plot(
         "--save-prompts/--no-save-prompts",
         help="Save formatted prompts into the run directory (for debugging)",
     ),
+    venue: Optional[str] = typer.Option(
+        None,
+        "--venue",
+        help="Target venue style (neurips, icml, acl, ieee, custom)",
+    ),
 ):
     """Generate a statistical plot from data."""
     if format not in ("png", "jpeg", "webp"):
         console.print(f"[red]Error: Format must be png, jpeg, or webp. Got: {format}[/red]")
+        raise typer.Exit(1)
+    if venue and venue.lower() not in ("neurips", "icml", "acl", "ieee", "custom"):
+        console.print(
+            f"[red]Error: --venue must be neurips, icml, acl, ieee, or custom. Got: {venue}[/red]"
+        )
         raise typer.Exit(1)
 
     configure_logging(verbose=verbose)
@@ -813,6 +847,7 @@ def plot(
         optimize_inputs=optimize,
         auto_refine=auto,
         save_prompts=True if save_prompts is None else save_prompts,
+        venue=venue,
     )
 
     gen_input = GenerationInput(
