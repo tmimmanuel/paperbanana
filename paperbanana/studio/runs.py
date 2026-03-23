@@ -12,11 +12,7 @@ def list_run_ids(output_dir: str) -> list[str]:
     root = Path(output_dir)
     if not root.is_dir():
         return []
-    runs = [
-        d.name
-        for d in root.iterdir()
-        if d.is_dir() and d.name.startswith("run_")
-    ]
+    runs = [d.name for d in root.iterdir() if d.is_dir() and d.name.startswith("run_")]
     runs.sort(
         key=lambda name: (Path(output_dir) / name).stat().st_mtime,
     )
@@ -28,11 +24,7 @@ def list_batch_ids(output_dir: str) -> list[str]:
     root = Path(output_dir)
     if not root.is_dir():
         return []
-    batches = [
-        d.name
-        for d in root.iterdir()
-        if d.is_dir() and d.name.startswith("batch_")
-    ]
+    batches = [d.name for d in root.iterdir() if d.is_dir() and d.name.startswith("batch_")]
     batches.sort(
         key=lambda name: (Path(output_dir) / name).stat().st_mtime,
     )

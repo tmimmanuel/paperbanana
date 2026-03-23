@@ -228,8 +228,23 @@ def build_studio_app(
                 d_go = gr.Button("Generate diagram", variant="primary")
 
                 def _do_diagram(
-                    od, c, vp, vm, ip, im, fo, it, au, mx, op, sp, sd,
-                    text, file, caption, aspect,
+                    od,
+                    c,
+                    vp,
+                    vm,
+                    ip,
+                    im,
+                    fo,
+                    it,
+                    au,
+                    mx,
+                    op,
+                    sp,
+                    sd,
+                    text,
+                    file,
+                    caption,
+                    aspect,
                 ):
                     _dotenv()
                     try:
@@ -294,8 +309,22 @@ def build_studio_app(
                 p_go = gr.Button("Generate plot", variant="primary")
 
                 def _do_plot(
-                    od, c, vp, vm, ip, im, fo, it, au, mx, op, sp, sd,
-                    dfile, inten, aspect,
+                    od,
+                    c,
+                    vp,
+                    vm,
+                    ip,
+                    im,
+                    fo,
+                    it,
+                    au,
+                    mx,
+                    op,
+                    sp,
+                    sd,
+                    dfile,
+                    inten,
+                    aspect,
                 ):
                     _dotenv()
                     try:
@@ -356,8 +385,24 @@ def build_studio_app(
                 ev_go = gr.Button("Run evaluation", variant="primary")
 
                 def _do_eval(
-                    od, c, vp, vm, ip, im, fo, it, au, mx, op, sp, sd,
-                    gen, ref, etext, efile, ecap,
+                    od,
+                    c,
+                    vp,
+                    vm,
+                    ip,
+                    im,
+                    fo,
+                    it,
+                    au,
+                    mx,
+                    op,
+                    sp,
+                    sd,
+                    gen,
+                    ref,
+                    etext,
+                    efile,
+                    ecap,
                 ):
                     _dotenv()
                     try:
@@ -365,9 +410,7 @@ def build_studio_app(
                         gp = _upload_path(gen) or ""
                         rp = _upload_path(ref) or ""
                         ctx = merge_context(etext, _upload_path(efile))
-                        log, res = run_evaluate(
-                            st, gp, rp, ctx, ecap or "", verbose_logging=False
-                        )
+                        log, res = run_evaluate(st, gp, rp, ctx, ecap or "", verbose_logging=False)
                         return log, res
                     except Exception as e:
                         return f"{type(e).__name__}: {e}", str(e)
@@ -424,8 +467,22 @@ def build_studio_app(
                 cr_go = gr.Button("Continue run", variant="primary")
 
                 def _do_continue(
-                    od, c, vp, vm, ip, im, fo, it, au, mx, op, sp, sd,
-                    rid, fb, extra,
+                    od,
+                    c,
+                    vp,
+                    vm,
+                    ip,
+                    im,
+                    fo,
+                    it,
+                    au,
+                    mx,
+                    op,
+                    sp,
+                    sd,
+                    rid,
+                    fb,
+                    extra,
                 ):
                     _dotenv()
                     try:
@@ -491,7 +548,19 @@ def build_studio_app(
                 b_go = gr.Button("Run batch", variant="primary")
 
                 def _do_batch(
-                    od, c, vp, vm, ip, im, fo, it, au, mx, op, sp, sd,
+                    od,
+                    c,
+                    vp,
+                    vm,
+                    ip,
+                    im,
+                    fo,
+                    it,
+                    au,
+                    mx,
+                    op,
+                    sp,
+                    sd,
                     mfile,
                 ):
                     _dotenv()
