@@ -130,9 +130,7 @@ class OpenRouterImageGen(ImageGenProvider):
                     b64_data = url.split(",", 1)[1]
                     image_bytes = base64.b64decode(b64_data)
                     if self.cost_tracker is not None:
-                        self.cost_tracker.record_image_call(
-                            provider=self.name, model=self._model
-                        )
+                        self.cost_tracker.record_image_call(provider=self.name, model=self._model)
                     return Image.open(BytesIO(image_bytes))
 
         # Fallback: some models inline the base64 data directly in the text content
@@ -142,9 +140,7 @@ class OpenRouterImageGen(ImageGenProvider):
             if match:
                 image_bytes = base64.b64decode(match.group(1))
                 if self.cost_tracker is not None:
-                    self.cost_tracker.record_image_call(
-                        provider=self.name, model=self._model
-                    )
+                    self.cost_tracker.record_image_call(provider=self.name, model=self._model)
                 return Image.open(BytesIO(image_bytes))
 
         logger.error("No image data in OpenRouter response", model=self._model)

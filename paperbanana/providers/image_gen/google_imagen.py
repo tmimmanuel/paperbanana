@@ -139,9 +139,7 @@ class GoogleImagenGen(ImageGenProvider):
                 try:
                     img = part.as_image()
                     if self.cost_tracker is not None:
-                        self.cost_tracker.record_image_call(
-                            provider=self.name, model=self._model
-                        )
+                        self.cost_tracker.record_image_call(provider=self.name, model=self._model)
                     return img
                 except Exception:
                     pass
@@ -150,9 +148,7 @@ class GoogleImagenGen(ImageGenProvider):
                 data = inline.data
                 image_bytes = base64.b64decode(data) if isinstance(data, str) else data
                 if self.cost_tracker is not None:
-                    self.cost_tracker.record_image_call(
-                        provider=self.name, model=self._model
-                    )
+                    self.cost_tracker.record_image_call(provider=self.name, model=self._model)
                 return Image.open(BytesIO(image_bytes))
 
         logger.error("No image data in Gemini response", model=self._model)

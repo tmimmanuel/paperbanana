@@ -112,12 +112,18 @@ class TestCostTracker:
     def test_summary_by_agent(self):
         tracker = CostTracker()
         tracker.record_vlm_call(
-            provider="openai", model="gpt-5.2",
-            input_tokens=1000, output_tokens=500, agent="planner",
+            provider="openai",
+            model="gpt-5.2",
+            input_tokens=1000,
+            output_tokens=500,
+            agent="planner",
         )
         tracker.record_vlm_call(
-            provider="openai", model="gpt-5.2",
-            input_tokens=2000, output_tokens=800, agent="critic",
+            provider="openai",
+            model="gpt-5.2",
+            input_tokens=2000,
+            output_tokens=800,
+            agent="critic",
         )
         summary = tracker.summary()
         assert "planner" in summary["by_agent"]
@@ -127,11 +133,16 @@ class TestCostTracker:
     def test_vlm_and_image_cost_split(self):
         tracker = CostTracker()
         tracker.record_vlm_call(
-            provider="openai", model="gpt-5.2",
-            input_tokens=1000, output_tokens=500, agent="critic",
+            provider="openai",
+            model="gpt-5.2",
+            input_tokens=1000,
+            output_tokens=500,
+            agent="critic",
         )
         tracker.record_image_call(
-            provider="openai_imagen", model="gpt-image-1.5", agent="visualizer",
+            provider="openai_imagen",
+            model="gpt-image-1.5",
+            agent="visualizer",
         )
         assert tracker.vlm_cost > 0
         assert tracker.image_cost > 0
@@ -140,8 +151,11 @@ class TestCostTracker:
     def test_unknown_model_pricing_not_known(self):
         tracker = CostTracker()
         tracker.record_vlm_call(
-            provider="unknown", model="mystery-model",
-            input_tokens=1000, output_tokens=500, agent="test",
+            provider="unknown",
+            model="mystery-model",
+            input_tokens=1000,
+            output_tokens=500,
+            agent="test",
         )
         assert tracker.entries[0].pricing_known is False
         assert tracker.entries[0].cost_usd == 0.0
@@ -156,8 +170,11 @@ class TestBudgetGuard:
         tracker = CostTracker(budget=None)
         for _ in range(100):
             tracker.record_vlm_call(
-                provider="openai", model="gpt-5.2",
-                input_tokens=10000, output_tokens=5000, agent="test",
+                provider="openai",
+                model="gpt-5.2",
+                input_tokens=10000,
+                output_tokens=5000,
+                agent="test",
             )
         # No error raised
 
@@ -165,8 +182,11 @@ class TestBudgetGuard:
         tracker = CostTracker(budget=0.001)
         with pytest.raises(BudgetExceededError) as exc_info:
             tracker.record_vlm_call(
-                provider="openai", model="gpt-5.2",
-                input_tokens=10000, output_tokens=5000, agent="planner",
+                provider="openai",
+                model="gpt-5.2",
+                input_tokens=10000,
+                output_tokens=5000,
+                agent="planner",
             )
         assert exc_info.value.budget == 0.001
         assert exc_info.value.spent > 0.001
@@ -174,8 +194,11 @@ class TestBudgetGuard:
     def test_budget_not_exceeded_for_cheap_calls(self):
         tracker = CostTracker(budget=100.0)
         tracker.record_vlm_call(
-            provider="gemini", model="gemini-2.0-flash",
-            input_tokens=5000, output_tokens=2000, agent="retriever",
+            provider="gemini",
+            model="gemini-2.0-flash",
+            input_tokens=5000,
+            output_tokens=2000,
+            agent="retriever",
         )
         # Free tier — no error
 
@@ -183,8 +206,11 @@ class TestBudgetGuard:
         tracker = CostTracker(budget=0.0001)
         with pytest.raises(BudgetExceededError) as exc_info:
             tracker.record_vlm_call(
-                provider="openai", model="gpt-5.2",
-                input_tokens=1000, output_tokens=500, agent="critic",
+                provider="openai",
+                model="gpt-5.2",
+                input_tokens=1000,
+                output_tokens=500,
+                agent="critic",
             )
         err = exc_info.value
         assert err.budget == 0.0001
@@ -250,13 +276,17 @@ class TestCostEstimator:
         from paperbanana.core.config import Settings
 
         settings_no_opt = Settings(
-            vlm_provider="openai", vlm_model="gpt-5.2",
-            image_provider="openai_imagen", image_model="gpt-image-1.5",
+            vlm_provider="openai",
+            vlm_model="gpt-5.2",
+            image_provider="openai_imagen",
+            image_model="gpt-image-1.5",
             refinement_iterations=1,
         )
         settings_opt = Settings(
-            vlm_provider="openai", vlm_model="gpt-5.2",
-            image_provider="openai_imagen", image_model="gpt-image-1.5",
+            vlm_provider="openai",
+            vlm_model="gpt-5.2",
+            image_provider="openai_imagen",
+            image_model="gpt-image-1.5",
             refinement_iterations=1,
             optimize_inputs=True,
         )

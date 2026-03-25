@@ -18,9 +18,7 @@ class BudgetExceededError(Exception):
         self.budget = budget
         self.spent = spent
         self.last_agent = last_agent
-        super().__init__(
-            f"Budget ${budget:.4f} exceeded (spent ${spent:.4f}) after {last_agent}"
-        )
+        super().__init__(f"Budget ${budget:.4f} exceeded (spent ${spent:.4f}) after {last_agent}")
 
 
 @dataclass
