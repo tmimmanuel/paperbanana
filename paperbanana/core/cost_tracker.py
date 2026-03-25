@@ -86,7 +86,13 @@ class CostTracker:
             cost=f"${cost:.6f}",
             total=f"${self.total_cost:.6f}",
         )
-        self._check_budget(agent)
+        if self.is_over_budget:
+            logger.warning(
+                "Budget exceeded during VLM call",
+                agent=agent,
+                budget=self.budget,
+                spent=f"${self.total_cost:.6f}",
+            )
 
     def record_image_call(
         self,
@@ -120,10 +126,21 @@ class CostTracker:
             cost=f"${cost:.6f}",
             total=f"${self.total_cost:.6f}",
         )
-        self._check_budget(agent)
+        if self.is_over_budget:
+            logger.warning(
+                "Budget exceeded during image call",
+                agent=agent,
+                budget=self.budget,
+                spent=f"${self.total_cost:.6f}",
+            )
+
+    @property
+    def is_over_budget(self) -> bool:
+        """Return True if cumulative cost exceeds the budget cap."""
+        return self.budget is not None and self.total_cost > self.budget
 
     def _check_budget(self, agent: str) -> None:
-        if self.budget is not None and self.total_cost > self.budget:
+        if self.is_over_budget:
             raise BudgetExceededError(
                 budget=self.budget,
                 spent=self.total_cost,

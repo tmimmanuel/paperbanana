@@ -166,7 +166,7 @@ class TestCostTracker:
 
 
 class TestBudgetGuard:
-    def test_no_budget_no_error(self):
+    def test_no_budget_no_flag(self):
         tracker = CostTracker(budget=None)
         for _ in range(100):
             tracker.record_vlm_call(
@@ -176,18 +176,34 @@ class TestBudgetGuard:
                 output_tokens=5000,
                 agent="test",
             )
-        # No error raised
+        assert tracker.is_over_budget is False
 
-    def test_budget_exceeded_raises(self):
+    def test_is_over_budget_flag_set(self):
+        """record_vlm_call should not raise; the pipeline checks is_over_budget at checkpoints."""
         tracker = CostTracker(budget=0.001)
+        # Should NOT raise — just sets the over-budget flag
+        tracker.record_vlm_call(
+            provider="openai",
+            model="gpt-5.2",
+            input_tokens=10000,
+            output_tokens=5000,
+            agent="planner",
+        )
+        assert tracker.is_over_budget is True
+        assert tracker.total_cost > 0.001
+
+    def test_check_budget_raises_at_checkpoint(self):
+        """_check_budget (called at pipeline checkpoints) should raise BudgetExceededError."""
+        tracker = CostTracker(budget=0.001)
+        tracker.record_vlm_call(
+            provider="openai",
+            model="gpt-5.2",
+            input_tokens=10000,
+            output_tokens=5000,
+            agent="planner",
+        )
         with pytest.raises(BudgetExceededError) as exc_info:
-            tracker.record_vlm_call(
-                provider="openai",
-                model="gpt-5.2",
-                input_tokens=10000,
-                output_tokens=5000,
-                agent="planner",
-            )
+            tracker._check_budget("iteration_boundary")
         assert exc_info.value.budget == 0.001
         assert exc_info.value.spent > 0.001
 
@@ -200,22 +216,34 @@ class TestBudgetGuard:
             output_tokens=2000,
             agent="retriever",
         )
-        # Free tier — no error
+        assert tracker.is_over_budget is False
 
     def test_budget_exceeded_error_attributes(self):
         tracker = CostTracker(budget=0.0001)
+        tracker.record_vlm_call(
+            provider="openai",
+            model="gpt-5.2",
+            input_tokens=1000,
+            output_tokens=500,
+            agent="critic",
+        )
+        assert tracker.is_over_budget is True
         with pytest.raises(BudgetExceededError) as exc_info:
-            tracker.record_vlm_call(
-                provider="openai",
-                model="gpt-5.2",
-                input_tokens=1000,
-                output_tokens=500,
-                agent="critic",
-            )
+            tracker._check_budget("critic")
         err = exc_info.value
         assert err.budget == 0.0001
         assert err.last_agent == "critic"
         assert "Budget" in str(err)
+
+    def test_image_call_sets_over_budget(self):
+        """record_image_call should also set is_over_budget without raising."""
+        tracker = CostTracker(budget=0.001)
+        tracker.record_image_call(
+            provider="openai_imagen",
+            model="gpt-image-1.5",
+            agent="visualizer",
+        )
+        assert tracker.is_over_budget is True
 
 
 # ── Cost estimator ──────────────────────────────────────────────────

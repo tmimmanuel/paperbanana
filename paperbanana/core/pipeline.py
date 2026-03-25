@@ -16,7 +16,7 @@ from paperbanana.agents.retriever import RetrieverAgent
 from paperbanana.agents.stylist import StylistAgent
 from paperbanana.agents.visualizer import VisualizerAgent
 from paperbanana.core.config import Settings
-from paperbanana.core.cost_tracker import BudgetExceededError, CostTracker
+from paperbanana.core.cost_tracker import CostTracker
 from paperbanana.core.prompt_recorder import PromptRecorder
 from paperbanana.core.types import (
     DiagramType,
@@ -546,7 +546,16 @@ class PaperBananaPipeline:
             total_iters = self.settings.refinement_iterations
 
         budget_exceeded = False
+
+        # Check budget after pre-iteration phases (retriever, planner, stylist)
+        if self._cost_tracker and self._cost_tracker.is_over_budget:
+            logger.warning("Budget exceeded after planning phases, skipping iterations")
+            budget_exceeded = True
+
         for i in range(total_iters):
+            if budget_exceeded:
+                break
+
             iter_index = i + 1
             logger.info(
                 f"Phase 2: Iteration {iter_index}/{total_iters}"
@@ -697,10 +706,7 @@ class PaperBananaPipeline:
             )
 
             # Check budget between iterations
-            try:
-                if self._cost_tracker and self._cost_tracker.budget is not None:
-                    self._cost_tracker._check_budget("iteration_boundary")
-            except BudgetExceededError:
+            if self._cost_tracker and self._cost_tracker.is_over_budget:
                 logger.warning(
                     "Budget exceeded between iterations, stopping early",
                     iteration=iter_index,
@@ -709,14 +715,22 @@ class PaperBananaPipeline:
                 break
 
         # Final output
-        final_image = iterations[-1].image_path
         output_format = getattr(self.settings, "output_format", "png").lower()
         ext = "jpg" if output_format == "jpeg" else output_format
         final_output_path = str(self._run_dir / f"final_output.{ext}")
 
-        # Load and save in desired format (handles PNG→JPEG/WebP conversion)
-        img = load_image(final_image)
-        save_image(img, final_output_path, format=output_format)
+        if iterations:
+            final_image = iterations[-1].image_path
+            # Load and save in desired format (handles PNG→JPEG/WebP conversion)
+            img = load_image(final_image)
+            save_image(img, final_output_path, format=output_format)
+        else:
+            # Budget exceeded before any iteration could complete
+            final_output_path = ""
+            logger.warning(
+                "No iterations completed — budget exceeded during planning phases",
+                run_id=self.run_id,
+            )
 
         total_seconds = time.perf_counter() - total_start
         logger.info(
@@ -769,8 +783,8 @@ class PaperBananaPipeline:
                 cost_summary["budget_usd"] = self.settings.budget_usd
             metadata_dict["cost"] = cost_summary
 
-        if self.settings.save_iterations:
-            save_json(metadata_dict, self._run_dir / "metadata.json")
+        # Always write metadata (including cost) to disk for every run
+        save_json(metadata_dict, self._run_dir / "metadata.json")
 
         output = GenerationOutput(
             image_path=final_output_path,
@@ -840,6 +854,9 @@ class PaperBananaPipeline:
         budget_exceeded = False
 
         for i in range(total_iters):
+            if budget_exceeded:
+                break
+
             iter_num = start_iter + i + 1
             logger.info(
                 f"Phase 2: Iteration {iter_num}" + (" (auto)" if self.settings.auto_refine else "")
@@ -991,10 +1008,8 @@ class PaperBananaPipeline:
                 mode="continue",
             )
 
-            try:
-                if self._cost_tracker and self._cost_tracker.budget is not None:
-                    self._cost_tracker._check_budget("iteration_boundary")
-            except BudgetExceededError:
+            # Check budget between iterations
+            if self._cost_tracker and self._cost_tracker.is_over_budget:
                 logger.warning(
                     "Budget exceeded between iterations, stopping early",
                     iteration=iter_num,
@@ -1056,8 +1071,8 @@ class PaperBananaPipeline:
                 cost_summary["budget_usd"] = self.settings.budget_usd
             metadata_dict["cost"] = cost_summary
 
-        if self.settings.save_iterations:
-            save_json(metadata_dict, run_dir / "metadata_continued.json")
+        # Always write metadata (including cost) to disk for every run
+        save_json(metadata_dict, run_dir / "metadata_continued.json")
 
         output = GenerationOutput(
             image_path=final_output_path,
